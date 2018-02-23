@@ -62,7 +62,7 @@ public class ServerResponse implements Serializable {
 				return "You have successfully logged in!";
 			return this.getErrorMessage();
 		case BALANCE_INQUIRY:
-			break;
+			return String.format("Your balance is currently: $%.2f", this.getUpdatedBalance());
 		case DEPOSIT:
 			break;
 		case WITHDRAW:

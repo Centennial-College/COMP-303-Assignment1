@@ -58,7 +58,6 @@ public class AtmClient {
 		} catch (UnknownHostException uhe) {
 			System.out.println("Server not found: " + uhe.getMessage());
 		}
-
 	}
 
 	private class ProcessingThread implements Runnable {
@@ -86,6 +85,8 @@ public class AtmClient {
 			this.in = new ObjectInputStream(socket.getInputStream());
 			// this.writer = new PrintWriter(new
 			// OutputStreamWriter(socket.getOutputStream()), true);
+			this.custId = 3012345;
+			this.pin = 3214;
 		}
 
 		@Override
@@ -97,9 +98,9 @@ public class AtmClient {
 					// the thread should be doing either one of two things:
 					// 1. soliciting input from user
 					// prevents the screen from displaying repeated screens
-					if (currentScreen != null) {
-						displayScreen(currentScreen);
-					}
+					// if (currentScreen != null) {
+					displayScreen(currentScreen);
+					// }
 
 					if (exitAtmClient)
 						// if (userInput.equalsIgnoreCase("exit"))
@@ -107,9 +108,10 @@ public class AtmClient {
 
 					// 2. displaying response from server to user
 					if ((res = (ServerResponse) in.readObject()) != null) {
-						System.out.println("\nSERVER >>");
+						// System.out.println("\nSERVER >>");
 						System.out.println(res + "\n");
 
+						// some operations can fail, would need handling
 						switch (req.getOperation()) {
 						case AUTHENTICATE:
 							if (!res.isOperationSuccess()) {
@@ -117,11 +119,6 @@ public class AtmClient {
 								continue;
 							}
 							currentScreen = Screen.MAIN_MENU;
-							break;
-						case BALANCE_INQUIRY:
-							System.out.printf("Your balance is currently: $%.2f", res.getUpdatedBalance());
-							break;
-						case DEPOSIT:
 							break;
 						case WITHDRAW:
 							break;
@@ -169,9 +166,10 @@ public class AtmClient {
 		 */
 		private void displayScreen(Screen screen) throws IOException {
 			// reset to null
-			currentScreen = null;
+			// currentScreen = null;
 
 			// didn't do input validation yet - will do with GUI
+			System.out.println();
 			switch (screen) {
 			case LOGIN:
 				System.out.println("\nWelcome to KOPS Bank!\n");
@@ -199,6 +197,10 @@ public class AtmClient {
 				switch (userInput) {
 				case 1:
 					currentScreen = Screen.BALANCE_INQUIRY;
+					System.out.printf("\nAccount #: %s%nBALANCE INQUIRY%n---%n", this.custId);
+					req = ClientRequest.balanceInquiry(custId, pin);
+					// writer.println("objMsg");
+					out.writeObject(req);
 					break;
 				case 2:
 					currentScreen = Screen.DEPOSIT_PROMPT_AMOUNT;
@@ -213,10 +215,24 @@ public class AtmClient {
 				}
 				break;
 			case BALANCE_INQUIRY:
-				System.out.printf("Account #: %s%nBALANCE INQUIRY%n---%n", this.custId);
-				req = ClientRequest.balanceInquiry(custId, pin);
-				// writer.println("objMsg");
-				out.writeObject(req);
+				// System.out.printf("Account #: %s%nBALANCE INQUIRY%n---%n", this.custId);
+				// req = ClientRequest.balanceInquiry(custId, pin);
+				// // writer.println("objMsg");
+				// out.writeObject(req);
+				System.out.println("Please enter your selected option from below:");
+				System.out.println("[1]. Return to the Main Menu.");
+				System.out.println("[2]. Exit ATM.");
+				userInput = sc.nextInt();
+				switch (userInput) {
+				case 1:
+					currentScreen = Screen.MAIN_MENU;
+					displayScreen(currentScreen);
+					break;
+				case 2:
+					exitAtmClient = true;
+					System.out.println("\nThank you for doing business with KOPS!\nHave a great day!\n");
+					break;
+				}
 				break;
 			case DEPOSIT_PROMPT_AMOUNT:
 				break;
