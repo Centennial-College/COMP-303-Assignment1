@@ -27,8 +27,6 @@ public class AtmClient {
 
 			System.out.printf("ATM Client connected to the Bank Server: %s on port: %s%n", hostname, port);
 
-			// (new Thread(new ReadThread(socket))).start();
-			// (new Thread(new WriteThread(socket))).start();
 			new Thread(new ProcessingThread(socket)).start();
 
 		} catch (UnknownHostException ex) {
@@ -65,7 +63,6 @@ public class AtmClient {
 
 		private ObjectOutputStream out;
 		private ObjectInputStream in;
-		// PrintWriter writer;
 		private Scanner sc = new Scanner(System.in);
 		// ---
 		private ClientRequest req;
@@ -83,32 +80,21 @@ public class AtmClient {
 			this.socket = socket;
 			this.out = new ObjectOutputStream(socket.getOutputStream());
 			this.in = new ObjectInputStream(socket.getInputStream());
-			// this.writer = new PrintWriter(new
-			// OutputStreamWriter(socket.getOutputStream()), true);
 		}
 
 		@Override
 		public void run() {
 			try {
-				// do {
 				while (true) {
-					// writer.flush();
 					// the thread should be doing either one of two things:
-					// prevents the screen from displaying repeated screens
-					// if (currentScreen != null) {
-
 					// 1. soliciting input from user
 					goToScreen(currentScreen);
-					// }
 
 					if (exitAtmClient)
-						// if (userInput.equalsIgnoreCase("exit"))
 						break;
 
 					// 2. displaying response from server to user
 					if ((res = (ServerResponse) in.readObject()) != null) {
-						// System.out.println("\nSERVER >>");
-
 						// for fail-proof operations, simply display their results
 						System.out.println("\n" + res + "\n");
 
@@ -127,36 +113,12 @@ public class AtmClient {
 							}
 							break;
 						}
-						// if invalid authorization, prompt them to do it again
-						// if (req.getOperation() == 'a' && !res.isOperationSuccess()) {
-						// currentScreen = 0;
-						// continue;
-						// }
-						//
-						// if (req.getOperation() == 'a' && res.isOperationSuccess()) {
-						// currentScreen = 0;
-						// continue;
-						// }
 					}
-
-					// System.out.print("getting normal user input: ");
-					// userInput = sc.nextLine();
-					// writer.println(userInput);
-
-					// this.socket.close();
-					// get a SocketException typeof IOException when closing socket and another
-					// thread tries to use it still...so need to
-					// we won't have this problem in GUI because only using on thread for i/o there
-					// not two diff threads
-					// isConnected() and isClosed() do not help here.
 				}
 				System.out.println("outside main while loop");
-				// while (!userInput.equalsIgnoreCase("exit"));
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (ClassNotFoundException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 		}
@@ -169,9 +131,6 @@ public class AtmClient {
 		 * 0 = Main Menu
 		 */
 		private void goToScreen(Screen screen) throws IOException {
-			// reset to null
-			// currentScreen = null;
-
 			// NOTE: only let execution leave this loop if server expected to send
 			// response/exiting atm client...otherwise error occurs.
 
@@ -191,9 +150,6 @@ public class AtmClient {
 				pin = sc.nextInt();
 
 				req = ClientRequest.authenticate(custId, pin);
-
-				// tell server to receive an object
-				// writer.println("objMsg");
 				out.writeObject(req);
 
 				break;
@@ -210,7 +166,6 @@ public class AtmClient {
 					currentScreen = Screen.BALANCE_INQUIRY;
 					System.out.printf("\nAccount #: %s%nBALANCE INQUIRY%n---%n", this.custId);
 					req = ClientRequest.balanceInquiry(custId, pin);
-					// writer.println("objMsg");
 					out.writeObject(req);
 					break;
 				case 2:
@@ -230,9 +185,6 @@ public class AtmClient {
 			case BALANCE_INQUIRY:
 			case DEPOSIT_RESULTS:
 			case WIDTHDRAWAL_RESULTS:
-				// System.out.printf("Account #: %s%nBALANCE INQUIRY%n---%n", this.custId);
-				// req = ClientRequest.balanceInquiry(custId, pin);
-				// // writer.println("objMsg");
 				System.out.println("Please enter your selected option from below:");
 				System.out.println("[1]. Return to the Main Menu.");
 				System.out.println("[2]. Exit ATM.");
@@ -257,7 +209,6 @@ public class AtmClient {
 				req = ClientRequest.deposit(custId, pin, amt);
 				out.writeObject(req);
 				currentScreen = Screen.DEPOSIT_RESULTS;
-				// goToScreen(currentScreen);
 				break;
 			case WITHDRAWAL_PROMPT_AMOUNT:
 				System.out.printf("\nAccount #: %s%nWITHDRAWAL%n---%n", this.custId);
@@ -269,10 +220,6 @@ public class AtmClient {
 				out.writeObject(req);
 				currentScreen = Screen.WIDTHDRAWAL_RESULTS;
 				break;
-			// case DEPOSIT_RESULTS:
-			// break;
-			// case WIDTHDRAWAL_RESULTS:
-			// break;
 			}
 		}
 	}

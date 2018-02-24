@@ -19,7 +19,6 @@ public class BankServer {
 	}
 
 	public void start() {
-		// try (ServerSocket serverSocket = new ServerSocket(port)) {
 		try {
 			ServerSocket serverSocket = new ServerSocket(port);
 			System.out.printf("Server is listening on port: %s%n", port);
@@ -50,24 +49,13 @@ public class BankServer {
 			try {
 				ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
 				ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-				// BufferedReader reader = new BufferedReader(new
-				// InputStreamReader(socket.getInputStream()));
-				// PrintWriter out = SocketUtils.getWriter(connection);
 
 				ServerResponse res;
-
-				// wait for msg from client to read
-				// String clientMsg;
 				ClientRequest req;
 
-				// while ((clientMsg = reader.readLine()) != null) {
-
-				// client telling server to receive an object
-				// if (clientMsg.equals("objMsg")) {
+				// 1. receive obj request
 				while ((req = (ClientRequest) in.readObject()) != null) {
 
-					// 1. receive obj request
-					// req = (ClientRequest) in.readObject();
 					res = new ServerResponse();
 
 					System.out.println("CLIENT >>\n" + req);
@@ -110,19 +98,11 @@ public class BankServer {
 						break;
 					}
 				}
-				// }
-				// if (line.equalsIgnoreCase("23")) {
-				// out.println(Math.random());
-				// }
-				// System.out.println("echo: " + line);
-				// }
-
 			} catch (
 
 			IOException ioe) {
 				System.out.printf("IOException: %s%n", ioe);
 			} catch (ClassNotFoundException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
