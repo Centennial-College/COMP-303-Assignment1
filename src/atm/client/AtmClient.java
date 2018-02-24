@@ -85,8 +85,6 @@ public class AtmClient {
 			this.in = new ObjectInputStream(socket.getInputStream());
 			// this.writer = new PrintWriter(new
 			// OutputStreamWriter(socket.getOutputStream()), true);
-			this.custId = 3012345;
-			this.pin = 3214;
 		}
 
 		@Override
@@ -96,10 +94,11 @@ public class AtmClient {
 				while (true) {
 					// writer.flush();
 					// the thread should be doing either one of two things:
-					// 1. soliciting input from user
 					// prevents the screen from displaying repeated screens
 					// if (currentScreen != null) {
-					displayScreen(currentScreen);
+
+					// 1. soliciting input from user
+					goToScreen(currentScreen);
 					// }
 
 					if (exitAtmClient)
@@ -109,7 +108,9 @@ public class AtmClient {
 					// 2. displaying response from server to user
 					if ((res = (ServerResponse) in.readObject()) != null) {
 						// System.out.println("\nSERVER >>");
-						System.out.println(res + "\n");
+
+						// for fail-proof operations, simply display their results
+						System.out.println("\n" + res + "\n");
 
 						// some operations can fail, would need handling
 						switch (req.getOperation()) {
@@ -121,6 +122,9 @@ public class AtmClient {
 							currentScreen = Screen.MAIN_MENU;
 							break;
 						case WITHDRAW:
+							if (!res.isOperationSuccess()) {
+								currentScreen = Screen.WITHDRAWAL_PROMPT_AMOUNT;
+							}
 							break;
 						}
 						// if invalid authorization, prompt them to do it again
@@ -164,9 +168,16 @@ public class AtmClient {
 		 * 
 		 * 0 = Main Menu
 		 */
-		private void displayScreen(Screen screen) throws IOException {
+		private void goToScreen(Screen screen) throws IOException {
 			// reset to null
 			// currentScreen = null;
+
+			// NOTE: only let execution leave this loop if server expected to send
+			// response/exiting atm client...otherwise error occurs.
+
+			// ^May not have this issue when moving over to GUI since we will be using
+			// Event-driven handlers instead of continuous loop reading from
+			// objectinputstream
 
 			// didn't do input validation yet - will do with GUI
 			System.out.println();
@@ -204,9 +215,11 @@ public class AtmClient {
 					break;
 				case 2:
 					currentScreen = Screen.DEPOSIT_PROMPT_AMOUNT;
+					goToScreen(currentScreen);
 					break;
 				case 3:
 					currentScreen = Screen.WITHDRAWAL_PROMPT_AMOUNT;
+					goToScreen(currentScreen);
 					break;
 				case 4:
 					exitAtmClient = true;
@@ -215,10 +228,11 @@ public class AtmClient {
 				}
 				break;
 			case BALANCE_INQUIRY:
+			case DEPOSIT_RESULTS:
+			case WIDTHDRAWAL_RESULTS:
 				// System.out.printf("Account #: %s%nBALANCE INQUIRY%n---%n", this.custId);
 				// req = ClientRequest.balanceInquiry(custId, pin);
 				// // writer.println("objMsg");
-				// out.writeObject(req);
 				System.out.println("Please enter your selected option from below:");
 				System.out.println("[1]. Return to the Main Menu.");
 				System.out.println("[2]. Exit ATM.");
@@ -226,7 +240,7 @@ public class AtmClient {
 				switch (userInput) {
 				case 1:
 					currentScreen = Screen.MAIN_MENU;
-					displayScreen(currentScreen);
+					goToScreen(currentScreen);
 					break;
 				case 2:
 					exitAtmClient = true;
@@ -235,13 +249,30 @@ public class AtmClient {
 				}
 				break;
 			case DEPOSIT_PROMPT_AMOUNT:
+				System.out.printf("\nAccount #: %s%nDEPOSIT%n---%n", this.custId);
+				System.out.println("Please enter the amount of money you would like to deposit:");
+				System.out.print("$");
+				amt = sc.nextDouble();
+
+				req = ClientRequest.deposit(custId, pin, amt);
+				out.writeObject(req);
+				currentScreen = Screen.DEPOSIT_RESULTS;
+				// goToScreen(currentScreen);
 				break;
 			case WITHDRAWAL_PROMPT_AMOUNT:
+				System.out.printf("\nAccount #: %s%nWITHDRAWAL%n---%n", this.custId);
+				System.out.println("Please enter the amount of money you would like to withdraw:");
+				System.out.print("$");
+				amt = sc.nextDouble();
+
+				req = ClientRequest.withdraw(custId, pin, amt);
+				out.writeObject(req);
+				currentScreen = Screen.WIDTHDRAWAL_RESULTS;
 				break;
-			case DEPOSIT_RESULTS:
-				break;
-			case WIDTHDRAWAL_RESULTS:
-				break;
+			// case DEPOSIT_RESULTS:
+			// break;
+			// case WIDTHDRAWAL_RESULTS:
+			// break;
 			}
 		}
 	}

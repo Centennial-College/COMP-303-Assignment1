@@ -80,7 +80,8 @@ public class BankServer {
 						res.setOperation(req.getOperation());
 						res.setOperationSuccess(this.db.authenticateCustomer(req.getCustomerId(), req.getPin()));
 						if (!res.isOperationSuccess())
-							res.setErrorMessage("You have entered an invalid customer Id or PIN.\nPlease try again!");
+							res.setErrorMessage(
+									"ERROR => You have entered an invalid customer Id or PIN.\nPlease try again!");
 						out.writeObject(res);
 						break;
 					case BALANCE_INQUIRY:
@@ -90,8 +91,22 @@ public class BankServer {
 						out.writeObject(res);
 						break;
 					case DEPOSIT:
+						res.setOperation(req.getOperation());
+						res.setOperationSuccess(true);
+						res.setRequestedAmount(req.getAmount());
+						this.db.deposit(req.getCustomerId(), req.getAmount());
+						res.setUpdatedBalance(this.db.getAccountBalance(req.getCustomerId()));
+						out.writeObject(res);
 						break;
 					case WITHDRAW:
+						res.setOperation(req.getOperation());
+						res.setOperationSuccess(this.db.withdraw(req.getCustomerId(), req.getAmount()));
+						res.setRequestedAmount(req.getAmount());
+						res.setUpdatedBalance(this.db.getAccountBalance(req.getCustomerId()));
+						if (!res.isOperationSuccess())
+							res.setErrorMessage(
+									"ERROR => You tried to withdraw more money than you currently have in your account.\nPlease try again!");
+						out.writeObject(res);
 						break;
 					}
 				}

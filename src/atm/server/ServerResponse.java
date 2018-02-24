@@ -64,9 +64,13 @@ public class ServerResponse implements Serializable {
 		case BALANCE_INQUIRY:
 			return String.format("Your balance is currently: $%.2f", this.getUpdatedBalance());
 		case DEPOSIT:
-			break;
+			return String.format("You have successfully deposited $%.2f%nYour udpated balance is now: $%.2f",
+					this.getRequestedAmount(), this.getUpdatedBalance());
 		case WITHDRAW:
-			break;
+			if (this.isOperationSuccess())
+				return String.format("You have successfully withdrawn $%.2f%nYour udpated balance is now: $%.2f",
+						this.getRequestedAmount(), this.getUpdatedBalance());
+			return this.getErrorMessage();
 		}
 		// don't need default case since operations are passed in by code, not user
 		// input, won't be error
