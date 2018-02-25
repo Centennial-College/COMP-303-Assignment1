@@ -5,34 +5,57 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import javafx.application.Application;
+import javafx.geometry.Pos;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextArea;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
 import atm.client.ClientRequest;
 import atm.shared.Constants;
 
-public class BankServer {
-	private int port;
-	private BankDatabase db;
+public class BankServer extends Application {
+	private static int port;
+	private BankDatabase db = new BankDatabase();
+	Stage window;
+	TextArea messages = new TextArea();
 
-	public BankServer(int port) {
-		this.port = port;
-		this.db = new BankDatabase();
-	}
+	// public BankServer(int port) {
+	// this.port = port;
+	// this.db = new BankDatabase();
+	// }
 
-	public void start() {
+	@Override
+	public void start(Stage primaryStage) {
+
+		window = primaryStage;
+		messages.setPrefHeight(550);
+		messages.setEditable(false);
+		VBox box = new VBox(10, messages);
+		box.setPrefSize(500, 600);
+
+		Scene main = new Scene(box);
+		window.setScene(main);
+		primaryStage.setTitle("KOPS Bank - Server");
+		primaryStage.show();
+
 		try {
 			ServerSocket serverSocket = new ServerSocket(port);
-			System.out.printf("Server is listening on port: %s%n", port);
+			messages.appendText(String.format("Server is listening on port: %s%n", port));
 
-			while (true) {
-				Socket socket = serverSocket.accept();
-				new Thread(new ConnectionHandler(socket, this.db)).start();
-				System.out.printf("New ATM Client connected.%n");
-			}
-
+			// while(true) {
+			Socket socket = serverSocket.accept();
+			new Thread(new ConnectionHandler(socket, this.db)).start();
+			messages.appendText(String.format("New ATM Client connected.%n"));
+			// }
 		} catch (IOException ioe) {
 			System.err.printf("IOException: %s%n", ioe);
 			ioe.printStackTrace();
 		}
+
 	}
 
 	private class ConnectionHandler implements Runnable {
@@ -58,8 +81,8 @@ public class BankServer {
 
 					res = new ServerResponse();
 
-					System.out.println("CLIENT >>\n" + req);
-					System.out.println("successfully received obj");
+					messages.appendText(String.format("CLIENT >>\n" + req));
+					messages.appendText(String.format("Successfully received obj\n\n"));
 
 					// 2. process client request
 					// 3. send server response
@@ -68,8 +91,7 @@ public class BankServer {
 						res.setOperation(req.getOperation());
 						res.setOperationSuccess(this.db.authenticateCustomer(req.getCustomerId(), req.getPin()));
 						if (!res.isOperationSuccess())
-							res.setErrorMessage(
-									"ERROR => You have entered an invalid customer Id or PIN.\nPlease try again!");
+							res.setErrorMessage("You have entered an invalid customer Id or PIN.\nPlease try again!");
 						out.writeObject(res);
 						break;
 					case BALANCE_INQUIRY:
@@ -93,7 +115,7 @@ public class BankServer {
 						res.setUpdatedBalance(this.db.getAccountBalance(req.getCustomerId()));
 						if (!res.isOperationSuccess())
 							res.setErrorMessage(
-									"ERROR => You tried to withdraw more money than you currently have in your account.\nPlease try again!");
+									"You tried to withdraw more money than you currently have in your account.\nPlease try again!");
 						out.writeObject(res);
 						break;
 					}
@@ -111,16 +133,18 @@ public class BankServer {
 
 	public static void main(String[] args) {
 		// default port number will be 8080 unless provided an input arg
-		int port = Constants.PORT;
+
+		port = Constants.PORT;
 		if (args.length > 0) {
 			try {
 				port = Integer.parseInt(args[0]);
+
 			} catch (NumberFormatException ex) {
 				System.err.printf("NumberFormatException: You have entered an invalid port number: %s%n", args[0]);
 			}
 		}
+		launch(args);
 
-		BankServer server = new BankServer(port);
-		server.start();
 	}
+
 }
