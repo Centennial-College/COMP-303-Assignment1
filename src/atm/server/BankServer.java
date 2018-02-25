@@ -5,17 +5,14 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import javafx.application.Application;
-import javafx.geometry.Pos;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextArea;
-import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
 
 import atm.client.ClientRequest;
 import atm.shared.Constants;
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.control.TextArea;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
 public class BankServer extends Application {
 	private static int port;
@@ -34,28 +31,46 @@ public class BankServer extends Application {
 		window = primaryStage;
 		messages.setPrefHeight(550);
 		messages.setEditable(false);
+		// messages.setStyle("-fx-text-fill: black; -fx-background-color: black;");
+
 		VBox box = new VBox(10, messages);
 		box.setPrefSize(500, 600);
+		// box.setStyle("-fx-background-color: red;");
+
+		// closes server when closing GUI
+		primaryStage.setOnCloseRequest((WindowEvent) -> {
+			System.exit(0);
+		});
+
+		// Scene main = new Scene(messages);
 
 		Scene main = new Scene(box);
 		window.setScene(main);
 		primaryStage.setTitle("KOPS Bank - Server");
 		primaryStage.show();
 
-		try {
-			ServerSocket serverSocket = new ServerSocket(port);
-			messages.appendText(String.format("Server is listening on port: %s%n", port));
+		// javaFX runs on a thread to display GUI
+		// if we try to do blocking events on that thread i.e. I/O, it will block the
+		// GUI (cause the app to become non-responsive)
+		new Thread(() -> {
+			try {
+				ServerSocket serverSocket = new ServerSocket(port);
+				messages.appendText(String.format("Server is listening on port: %s%n", port));
+				System.out.print(String.format("Server is listening on port: %s%n", port));
 
-			// while(true) {
-			Socket socket = serverSocket.accept();
-			new Thread(new ConnectionHandler(socket, this.db)).start();
-			messages.appendText(String.format("New ATM Client connected.%n"));
-			// }
-		} catch (IOException ioe) {
-			System.err.printf("IOException: %s%n", ioe);
-			ioe.printStackTrace();
-		}
-
+				// continuously check for new atm client connections
+				while (true) {
+					System.out.println("Listening for a socket");
+					Socket socket = serverSocket.accept();
+					System.out.println("Socket is " + socket);
+					new Thread(new ConnectionHandler(socket, this.db)).start();
+					messages.appendText(String.format("New ATM Client connected.%n"));
+				}
+			} catch (IOException ioe) {
+				System.err.printf("IOException: %s%n", ioe);
+				ioe.printStackTrace();
+			}
+		}).start();
 	}
 
 	private class ConnectionHandler implements Runnable {
