@@ -15,7 +15,6 @@ public class ClientRequest implements Serializable {
 	private int customerId;
 	private int pin;
 	private double amount;
-	// private char operation;
 	private Operations operation;
 
 	// outside of this class only grant access to static methods
