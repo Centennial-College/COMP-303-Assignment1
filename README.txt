@@ -4,20 +4,20 @@ Group9377_Assignment1
 This is the assignment 1 submission for COMP303 by Group KOPS.
 
 Group Members and their Responsiblities:
-	Kevin Ma 				300867968
+	Kevin Ma		300867968
 		Socket Programming
 		Documentation
 		Client Request
 		Server Response
 
-	Ostap Hamarnyk 		300836326
+	Ostap Hamarnyk		300836326
 		JavaFX GUI
 
-	Poulad Ashraf Pour 	300858337
+	Poulad Ashraf Pour	300858337
 		Socket Programming
 		Testing
 
-	Suthas Ganeshathasan 300838430
+	Suthas Ganeshathasan	300838430
 		Account Object
 		BankDatabase Object
 ---
