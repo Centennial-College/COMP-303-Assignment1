@@ -68,7 +68,7 @@ public class AtmClient extends Application {
 		// General GUI properties //
 
 		window = primaryStage;
-		primaryStage.setTitle("KOPS Bank");
+		primaryStage.setTitle("KOPS Bank: ATM Client");
 		GridPane grid = new GridPane();
 		grid.setAlignment(Pos.CENTER);
 		grid.setHgap(10);

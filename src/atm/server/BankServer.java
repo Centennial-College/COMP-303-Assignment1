@@ -46,7 +46,7 @@ public class BankServer extends Application {
 
 		Scene main = new Scene(box);
 		window.setScene(main);
-		primaryStage.setTitle("KOPS Bank - Server");
+		primaryStage.setTitle("KOPS Bank: Server");
 		primaryStage.show();
 
 		// javaFX runs on a thread to display GUI
@@ -56,13 +56,10 @@ public class BankServer extends Application {
 			try {
 				ServerSocket serverSocket = new ServerSocket(port);
 				messages.appendText(String.format("Server is listening on port: %s%n", port));
-				System.out.print(String.format("Server is listening on port: %s%n", port));
 
 				// continuously check for new atm client connections
 				while (true) {
-					System.out.println("Listening for a socket");
 					Socket socket = serverSocket.accept();
-					System.out.println("Socket is " + socket);
 					new Thread(new ConnectionHandler(socket, this.db)).start();
 					messages.appendText(String.format("New ATM Client connected.%n"));
 				}
@@ -96,8 +93,8 @@ public class BankServer extends Application {
 
 					res = new ServerResponse();
 
-					messages.appendText(String.format("CLIENT >>\n" + req));
-					messages.appendText(String.format("Successfully received obj\n\n"));
+					messages.appendText(String.format("%nCLIENT >>%n%s => ", req));
+					// messages.appendText(String.format("Successfully received obj\n\n"));
 
 					// 2. process client request
 					// 3. send server response
@@ -134,6 +131,13 @@ public class BankServer extends Application {
 						out.writeObject(res);
 						break;
 					}
+
+					if (res.isOperationSuccess()) {
+						messages.appendText(String.format("SUCCESS%n"));
+					} else {
+						messages.appendText(String.format("FAILED%n"));
+					}
+
 				}
 			} catch (
 

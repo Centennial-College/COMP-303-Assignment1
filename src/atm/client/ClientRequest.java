@@ -61,10 +61,9 @@ public class ClientRequest implements Serializable {
 	@Override
 	public String toString() {
 		if (operation == Operations.AUTHENTICATE)
-			return String.format("Customer ID: %s%nPIN: %s%nOperation: %s%n", this.customerId, this.pin,
-					this.operation);
+			return String.format("Customer ID: %s%nPIN: %s%nOperation: %s", this.customerId, this.pin, this.operation);
 
-		return String.format("Customer ID: %s%nPIN: %s%nAmount %.2f%nOperation: %s%n", this.customerId, this.pin,
+		return String.format("Customer ID: %s%nPIN: %s%nAmount %.2f%nOperation: %s", this.customerId, this.pin,
 				this.amount, this.operation);
 	}
 }
