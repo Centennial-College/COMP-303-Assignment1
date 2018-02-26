@@ -2,15 +2,12 @@ package atm.server;
 
 /**
  * 
- * @class AccountDTO
- * @author Suthas G
- * @description Data Transfer Object which represents a bank account.
- * @date 2018-02-21
+ * Data Transfer Object which represents a bank account.
  *
  */
 public class AccountDTO {
 	// customerId synonymous with account number
-	private final int customerId; // once acount is created, this cannot change
+	private final int customerId; // once account is created, this cannot change
 	private int pin; // PIN for authentication
 	private double balance; // balance remaining in account
 

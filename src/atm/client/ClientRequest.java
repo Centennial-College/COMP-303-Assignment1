@@ -34,6 +34,10 @@ public class ClientRequest implements Serializable {
 		return new ClientRequest(id, pin, amt, Operations.WITHDRAW);
 	}
 
+	public static ClientRequest exitSession(int id, int pin) {
+		return new ClientRequest(id, pin, 0, Operations.EXIT);
+	}
+
 	// constructor - not to be called outside of this class
 	private ClientRequest(int id, int pin, double amt, Operations operation) {
 		this.customerId = id;
@@ -60,7 +64,7 @@ public class ClientRequest implements Serializable {
 
 	@Override
 	public String toString() {
-		if (operation == Operations.AUTHENTICATE)
+		if (operation == Operations.AUTHENTICATE || operation == Operations.BALANCE_INQUIRY)
 			return String.format("Customer ID: %s%nPIN: %s%nOperation: %s", this.customerId, this.pin, this.operation);
 
 		return String.format("Customer ID: %s%nPIN: %s%nAmount %.2f%nOperation: %s", this.customerId, this.pin,

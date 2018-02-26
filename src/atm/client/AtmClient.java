@@ -11,11 +11,14 @@ import java.util.Scanner;
 import atm.server.ServerResponse;
 import atm.shared.Constants;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
@@ -30,22 +33,27 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 
+/**
+ *
+ * The main application to be run on the client side. This class contains the
+ * GUI for the Atm client application.
+ *
+ */
 public class AtmClient extends Application {
 	Stage window;
-	Scene login, mainMenu, balanceView, depositView, withdrawView;
+	Scene loginView, mainMenuView, balanceView, depositView, withdrawView;
 	static InetAddress hostname;
 	static int port;
 
 	TextField txtUserID, txtPin, txtDeposit, txtWithdraw;
-	Button btnSignIn, btnDeposit, btnWithdraw, btnCheckBal, btnExit, btnMain, btnDepMain, btnWdMain, btnClose,
-			btnDepositCash, btnWithdrawCash;
+	Button btnSignIn, btnDeposit, btnWithdraw, btnCheckBal, btnMainMenuExit, btnMain, btnDepMain, btnWdMain,
+			btnBalInqClose, btnDepositCash, btnWithdrawCash, btnLoginExit;
 	Text errorMsg, withdrawError, depositError;
 	Label lblBalance, lblAmt;
 
 	public static void main(String[] args) {
 		try {
 			hostname = InetAddress.getByName(null);
-			// default port number will be 8080 unless provided an input arg
 			port = Constants.PORT;
 			if (args.length > 0) {
 				try {
@@ -69,44 +77,48 @@ public class AtmClient extends Application {
 
 		window = primaryStage;
 		primaryStage.setTitle("KOPS Bank: ATM Client");
-		GridPane grid = new GridPane();
-		grid.setAlignment(Pos.CENTER);
-		grid.setHgap(10);
-		grid.setVgap(10);
-		grid.setPadding(new Insets(25, 25, 25, 25));
+
+		// Login View
+		GridPane loginPane = new GridPane();
+		loginPane.setAlignment(Pos.CENTER);
+		loginPane.setHgap(10);
+		loginPane.setVgap(10);
+		loginPane.setPadding(new Insets(25, 25, 25, 25));
 
 		Text title = new Text("Welcome to KOPS Bank!\nPlease enter your ID and PIN below:");
 		title.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
 		title.setTextAlignment(TextAlignment.CENTER);
-		grid.add(title, 0, 0, 2, 1);
+		loginPane.add(title, 0, 0, 2, 1);
 
 		Label lblUserID = new Label("ID:");
-		grid.add(lblUserID, 0, 2);
+		loginPane.add(lblUserID, 0, 2);
 
 		txtUserID = new TextField();
-		grid.add(txtUserID, 1, 2);
+		loginPane.add(txtUserID, 1, 2);
 
 		Label lblPin = new Label("PIN:");
-		grid.add(lblPin, 0, 3);
+		loginPane.add(lblPin, 0, 3);
 
 		txtPin = new PasswordField();
-		grid.add(txtPin, 1, 3);
+		loginPane.add(txtPin, 1, 3);
 
 		btnSignIn = new Button("Sign in");
 		HBox btnBox = new HBox(10);
 		btnBox.setAlignment(Pos.BOTTOM_RIGHT);
 		btnBox.getChildren().add(btnSignIn);
-		grid.add(btnBox, 1, 4);
+		btnLoginExit = new Button("Exit");
+		btnBox.getChildren().add(btnLoginExit);
+		loginPane.add(btnBox, 1, 4);
 
 		errorMsg = new Text();
 		errorMsg.setFill(Color.FIREBRICK);
-		grid.add(errorMsg, 1, 6);
+		loginPane.add(errorMsg, 1, 6);
 
-		// Account View
-		GridPane menu = new GridPane();
-		menu.setPadding(new Insets(20, 20, 20, 20));
-		menu.setAlignment(Pos.CENTER);
-		menu.setVgap(10);
+		// Main Menu View
+		GridPane menuPane = new GridPane();
+		menuPane.setPadding(new Insets(20, 20, 20, 20));
+		menuPane.setAlignment(Pos.CENTER);
+		menuPane.setVgap(10);
 
 		Text welcomeMsg = new Text("What would you like to do today?");
 		welcomeMsg.setFont(Font.font("Tahoma", FontWeight.NORMAL, 18));
@@ -114,30 +126,30 @@ public class AtmClient extends Application {
 		btnDeposit = new Button("Deposit");
 		btnWithdraw = new Button("Withdraw");
 		btnCheckBal = new Button("Check Balance");
-		btnExit = new Button("End Session");
+		btnMainMenuExit = new Button("End Session");
 
 		btnDeposit.setMinWidth(275);
 		btnWithdraw.setMinWidth(275);
 		btnCheckBal.setMinWidth(275);
-		btnExit.setMinWidth(275);
+		btnMainMenuExit.setMinWidth(275);
 
 		btnDeposit.setMinHeight(50);
 		btnWithdraw.setMinHeight(50);
 		btnCheckBal.setMinHeight(50);
-		btnExit.setMinHeight(50);
+		btnMainMenuExit.setMinHeight(50);
 
-		menu.add(welcomeMsg, 0, 0, 2, 1);
-		menu.add(btnCheckBal, 0, 1);
-		menu.add(btnDeposit, 0, 2);
-		menu.add(btnWithdraw, 0, 3);
-		menu.add(btnExit, 0, 4);
+		menuPane.add(welcomeMsg, 0, 0, 2, 1);
+		menuPane.add(btnCheckBal, 0, 1);
+		menuPane.add(btnDeposit, 0, 2);
+		menuPane.add(btnWithdraw, 0, 3);
+		menuPane.add(btnMainMenuExit, 0, 4);
 
 		// Balance View
-		GridPane balPane = new GridPane();
+		GridPane balancePane = new GridPane();
 
-		balPane.setPadding(new Insets(0, 10, 10, 10));
-		balPane.setAlignment(Pos.CENTER);
-		balPane.setVgap(15);
+		balancePane.setPadding(new Insets(0, 10, 10, 10));
+		balancePane.setAlignment(Pos.CENTER);
+		balancePane.setVgap(15);
 
 		lblBalance = new Label("Your updated balance is $244.25");
 		lblBalance.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
@@ -147,18 +159,18 @@ public class AtmClient extends Application {
 		lblAmt.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
 		lblAmt.setWrapText(true);
 		btnMain = new Button("Main Menu");
-		btnClose = new Button("Exit");
+		btnBalInqClose = new Button("Exit");
 
-		balPane.add(lblAmt, 0, 0, 2, 1);
-		balPane.add(lblBalance, 0, 2, 2, 1);
-		balPane.add(btnClose, 3, 4);
-		balPane.add(btnMain, 0, 4);
+		balancePane.add(lblAmt, 0, 0, 2, 1);
+		balancePane.add(lblBalance, 0, 2, 2, 1);
+		balancePane.add(btnBalInqClose, 3, 4);
+		balancePane.add(btnMain, 0, 4);
 
 		// Deposit View
-		GridPane depPane = new GridPane();
-		depPane.setAlignment(Pos.CENTER);
-		depPane.setVgap(15);
-		depPane.setHgap(15);
+		GridPane depositPane = new GridPane();
+		depositPane.setAlignment(Pos.CENTER);
+		depositPane.setVgap(15);
+		depositPane.setHgap(15);
 
 		btnDepMain = new Button("Main Menu");
 		Label lblDeposit = new Label("Please enter amount you would like to deposit:");
@@ -172,21 +184,21 @@ public class AtmClient extends Application {
 		depositError.setFill(Color.FIREBRICK);
 		depositError.setWrappingWidth(300);
 
-		depPane.add(lblDeposit, 0, 0, 2, 1);
-		depPane.add(txtDeposit, 0, 2);
-		depPane.add(btnDepositCash, 1, 2);
-		depPane.add(depositError, 0, 4, 2, 1);
+		depositPane.add(lblDeposit, 0, 0, 2, 1);
+		depositPane.add(txtDeposit, 0, 2);
+		depositPane.add(btnDepositCash, 1, 2);
+		depositPane.add(depositError, 0, 4, 2, 1);
 
 		BorderPane depBorderPane = new BorderPane();
 		depBorderPane.setPadding(new Insets(15, 15, 15, 15));
-		depBorderPane.setCenter(depPane);
+		depBorderPane.setCenter(depositPane);
 		depBorderPane.setBottom(btnDepMain);
 
 		// Withdraw View
-		GridPane wdPane = new GridPane();
-		wdPane.setAlignment(Pos.CENTER);
-		wdPane.setVgap(15);
-		wdPane.setHgap(15);
+		GridPane withdrawPane = new GridPane();
+		withdrawPane.setAlignment(Pos.CENTER);
+		withdrawPane.setVgap(15);
+		withdrawPane.setHgap(15);
 
 		btnWdMain = new Button("Main Menu");
 		Label lblWithdraw = new Label("Please enter amount you would like to withdraw:");
@@ -200,28 +212,37 @@ public class AtmClient extends Application {
 		withdrawError.setFill(Color.FIREBRICK);
 		withdrawError.setWrappingWidth(300);
 
-		wdPane.add(lblWithdraw, 0, 0, 2, 1);
-		wdPane.add(txtWithdraw, 0, 2);
-		wdPane.add(btnWithdrawCash, 1, 2);
-		wdPane.add(withdrawError, 0, 4, 2, 1);
+		withdrawPane.add(lblWithdraw, 0, 0, 2, 1);
+		withdrawPane.add(txtWithdraw, 0, 2);
+		withdrawPane.add(btnWithdrawCash, 1, 2);
+		withdrawPane.add(withdrawError, 0, 4, 2, 1);
 
 		BorderPane wdBorderPane = new BorderPane();
-		wdBorderPane.setCenter(wdPane);
+		wdBorderPane.setCenter(withdrawPane);
 		wdBorderPane.setBottom(btnWdMain);
 		wdBorderPane.setPadding(new Insets(0, 0, 15, 15));
 
 		withdrawView = new Scene(wdBorderPane, 400, 450);
 		depositView = new Scene(depBorderPane, 400, 450);
-		balanceView = new Scene(balPane, 400, 450);
-		mainMenu = new Scene(menu, 400, 450);
-		login = new Scene(grid, 400, 450);
-		window.setScene(login);
+		balanceView = new Scene(balancePane, 400, 450);
+		mainMenuView = new Scene(menuPane, 400, 450);
+		loginView = new Scene(loginPane, 400, 450);
+		window.setScene(loginView);
 		primaryStage.setResizable(false);
 		primaryStage.show();
 
-		// closes server when closing GUI
-		primaryStage.setOnCloseRequest((WindowEvent) -> {
-			System.exit(0);
+		// closes client when closing GUI
+		primaryStage.setOnCloseRequest(e -> {
+			// prevent user from closing app by pressing x button
+			e.consume();
+
+			// show instructions dialog
+			Alert alert = new Alert(AlertType.INFORMATION);
+			alert.setTitle("How to Disconnect");
+			alert.setHeaderText("Proper way to disconnect:");
+			alert.setContentText(
+					"Please use the Exit and Close buttons found on either:\n1. Main Menu Screen\n2. Balance Inquiry Screen, or\n3. Login Screen");
+			alert.show();
 		});
 
 		Socket socket = null;
@@ -238,6 +259,7 @@ public class AtmClient extends Application {
 	}
 
 	private class ProcessingThread implements Runnable {
+
 		private Socket socket;
 
 		private ObjectOutputStream out;
@@ -264,31 +286,13 @@ public class AtmClient extends Application {
 		@Override
 		public void run() {
 			try {
-				// the thread should be doing either one of two things:
-				// 1. soliciting input from user
 				goToScreen(currentScreen);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 
-		/*
-		 * For Console App, will not need this with GUI
-		 * 
-		 * -1 = awaiting user input
-		 * 
-		 * 0 = Main Menu
-		 */
 		private void goToScreen(Screen screen) throws IOException {
-			// NOTE: only let execution leave this loop if server expected to send
-			// response/exiting atm client...otherwise error occurs.
-
-			// ^May not have this issue when moving over to GUI since we will be using
-			// Event-driven handlers instead of continuous loop reading from
-			// objectinputstream
-
-			// didn't do input validation yet - will do with GUI
-
 			switch (screen) {
 
 			case LOGIN:
@@ -323,9 +327,19 @@ public class AtmClient extends Application {
 						errorMsg.setText("Please enter both ID and PIN!");
 					}
 				});
+				btnLoginExit.setOnAction(e -> {
+					req = ClientRequest.exitSession(-1, pin);
+					try {
+						out.writeObject(req);
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					Platform.exit();
+				});
 				break;
 			case MAIN_MENU:
-				window.setScene(mainMenu);
+				window.setScene(mainMenuView);
 
 				btnCheckBal.setOnAction(e -> {
 					try {
@@ -356,10 +370,19 @@ public class AtmClient extends Application {
 						ex.printStackTrace();
 					}
 				});
-				btnExit.setOnAction(e -> {
-					window.close();
+				btnMainMenuExit.setOnAction(e -> {
+					req = ClientRequest.exitSession(custId, pin);
+					try {
+						out.writeObject(req);
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					Platform.exit();
 				});
 				break;
+
+			// all have same behavior
 			case BALANCE_INQUIRY:
 			case DEPOSIT_RESULTS:
 			case WIDTHDRAWAL_RESULTS:
@@ -372,10 +395,18 @@ public class AtmClient extends Application {
 						ex.printStackTrace();
 					}
 				});
-				btnClose.setOnAction(e -> {
-					window.close();
+				btnBalInqClose.setOnAction(e -> {
+					req = ClientRequest.exitSession(custId, pin);
+					try {
+						out.writeObject(req);
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					Platform.exit();
 				});
 				break;
+
 			case DEPOSIT_PROMPT_AMOUNT:
 				window.setScene(depositView);
 				txtDeposit.setText("");
@@ -430,7 +461,6 @@ public class AtmClient extends Application {
 				btnWithdrawCash.setOnAction(e -> {
 					try {
 						if (!txtWithdraw.getText().equals("")) {
-							// withdrawError.setText("");
 							amt = Double.parseDouble(txtWithdraw.getText());
 							req = ClientRequest.withdraw(custId, pin, amt);
 							out.writeObject(req);
@@ -462,8 +492,6 @@ public class AtmClient extends Application {
 		private void processServerRes() {
 			try {
 				if ((res = (ServerResponse) in.readObject()) != null) {
-					// for fail-proof operations, simply display their results
-					// some operations can fail, would need handling
 					switch (req.getOperation()) {
 					case AUTHENTICATE:
 						if (!res.isOperationSuccess()) {

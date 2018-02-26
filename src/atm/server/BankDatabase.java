@@ -6,10 +6,7 @@ import java.util.Iterator;
 
 /**
  * 
- * @class BankDatabase
- * @author Suthas G
- * @description Represents the bank account information database
- * @date 2018-02-21
+ * Represents the bank account information database
  *
  */
 public class BankDatabase {

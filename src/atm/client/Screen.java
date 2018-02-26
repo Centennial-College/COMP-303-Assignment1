@@ -1,5 +1,10 @@
 package atm.client;
 
+/**
+ * 
+ * Different Screens displayed by the ATM Client
+ *
+ */
 public enum Screen {
 	LOGIN,
 	MAIN_MENU,

@@ -4,6 +4,11 @@ import java.io.Serializable;
 
 import atm.shared.Operations;
 
+/**
+ *
+ * Server Response Object sent from BankServer to AtmClient containing updated balance from operations.
+ *
+ */
 public class ServerResponse implements Serializable {
 	private Operations operation;
 	private boolean operationSuccess;

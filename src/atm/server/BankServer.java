@@ -8,22 +8,24 @@ import java.net.Socket;
 
 import atm.client.ClientRequest;
 import atm.shared.Constants;
+import atm.shared.Operations;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+/**
+ *
+ * The main application to be run on the server side. This class provides a
+ * basic GUI to display server 'events' and logs it in a console fashion.
+ *
+ */
 public class BankServer extends Application {
 	private static int port;
 	private BankDatabase db = new BankDatabase();
 	Stage window;
 	TextArea messages = new TextArea();
-
-	// public BankServer(int port) {
-	// this.port = port;
-	// this.db = new BankDatabase();
-	// }
 
 	@Override
 	public void start(Stage primaryStage) {
@@ -31,18 +33,14 @@ public class BankServer extends Application {
 		window = primaryStage;
 		messages.setPrefHeight(550);
 		messages.setEditable(false);
-		// messages.setStyle("-fx-text-fill: black; -fx-background-color: black;");
 
 		VBox box = new VBox(10, messages);
 		box.setPrefSize(500, 600);
-		// box.setStyle("-fx-background-color: red;");
 
 		// closes server when closing GUI
 		primaryStage.setOnCloseRequest((WindowEvent) -> {
 			System.exit(0);
 		});
-
-		// Scene main = new Scene(messages);
 
 		Scene main = new Scene(box);
 		window.setScene(main);
@@ -93,9 +91,6 @@ public class BankServer extends Application {
 
 					res = new ServerResponse();
 
-					messages.appendText(String.format("%nCLIENT >>%n%s => ", req));
-					// messages.appendText(String.format("Successfully received obj\n\n"));
-
 					// 2. process client request
 					// 3. send server response
 					switch (req.getOperation()) {
@@ -132,10 +127,23 @@ public class BankServer extends Application {
 						break;
 					}
 
-					if (res.isOperationSuccess()) {
-						messages.appendText(String.format("SUCCESS%n"));
+					if (req.getOperation() != Operations.EXIT) {
+						messages.appendText(String.format("%nCLIENT REQUEST >>%n%s", req));
+
+						if (res.isOperationSuccess()) {
+							messages.appendText(String.format(" => SUCCESS%n"));
+						} else {
+							messages.appendText(String.format(" => FAILED%n"));
+						}
 					} else {
-						messages.appendText(String.format("FAILED%n"));
+						// if no user logged in, custId will be -1
+						if (req.getCustomerId() == -1) {
+							messages.appendText(
+									String.format("%nATM Client disconnected.%n---%n", req.getCustomerId()));
+						} else {
+							messages.appendText(String.format("%nATM Client - Account #: %s disconnected.%n---%n",
+									req.getCustomerId()));
+						}
 					}
 
 				}
@@ -151,8 +159,6 @@ public class BankServer extends Application {
 	}
 
 	public static void main(String[] args) {
-		// default port number will be 8080 unless provided an input arg
-
 		port = Constants.PORT;
 		if (args.length > 0) {
 			try {
@@ -163,7 +169,5 @@ public class BankServer extends Application {
 			}
 		}
 		launch(args);
-
 	}
-
 }
